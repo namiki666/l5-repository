@@ -3,17 +3,25 @@
 $NAMESPACE$
 
 use Illuminate\Database\Eloquent\Model;
-use Prettus\Repository\Contracts\Transformable;
-use Prettus\Repository\Traits\TransformableTrait;
+use Prettus\Repository\Contracts\Presentable;
+use Prettus\Repository\Traits\PresentableTrait;
+$USE_PRESENTER$
 
 /**
  * Class $CLASS$.
  *
  * @package $NAMESPACE$
  */
-class $CLASS$ extends Model implements Transformable
+class $CLASS$ extends Model implements Presentable
 {
-    use TransformableTrait;
+    use PresentableTrait;
+
+    /**
+     * Specify Presenter class name
+     *
+     * @return string
+     */
+    protected $presenter = $CLASS$Presenter::class;
 
     /**
      * The attributes that are mass assignable.
@@ -21,5 +29,23 @@ class $CLASS$ extends Model implements Transformable
      * @var array
      */
     protected $fillable = $FILLABLE$;
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        //
+    ];
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        //
+    ];
 
 }

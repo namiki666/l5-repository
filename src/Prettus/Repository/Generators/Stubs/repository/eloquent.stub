@@ -4,9 +4,9 @@ $NAMESPACE$
 
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
+$USE_VALIDATOR$
 use $REPOSITORY$
 use $MODEL$;
-$USE_VALIDATOR$
 
 /**
  * Class $CLASS$RepositoryEloquent.
