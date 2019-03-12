@@ -3,12 +3,10 @@
 $NAMESPACE$
 
 use Illuminate\Http\Request;
-
 use $APPNAME$Http\Requests;
+use $APPNAME$Http\Controllers\Controller;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
-use $APPNAME$Http\Requests\$CLASS$CreateRequest;
-use $APPNAME$Http\Requests\$CLASS$UpdateRequest;
 $REPOSITORY$
 $VALIDATOR$
 
@@ -62,6 +60,18 @@ class $CONTROLLER$Controller extends Controller
     }
 
     /**
+     * Show the form for creating the specified resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        $$SINGULAR$ = $this->repository->makeModel();
+
+        return view('$PLURAL$.create', compact('$SINGULAR$'));
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  $CLASS$CreateRequest $request
@@ -70,7 +80,7 @@ class $CONTROLLER$Controller extends Controller
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function store($CLASS$CreateRequest $request)
+    public function store(Request $request)
     {
         try {
 
@@ -146,7 +156,7 @@ class $CONTROLLER$Controller extends Controller
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function update($CLASS$UpdateRequest $request, $id)
+    public function update(Request $request, $id)
     {
         try {
 
