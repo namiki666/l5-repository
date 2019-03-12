@@ -82,6 +82,16 @@ class EntityCommand extends Command
             $this->call($controller_command, $resource_args);
         }
 
+        if ($this->confirm('Would you like to create a Json Resource? [y|N]')) {
+
+            $resource_args = [
+                'name'    => $this->argument('name'),
+            ];
+
+            // Generate a controller resource
+            $this->call('make:json-resource', $resource_args);
+        }
+
         $this->call('make:repository', [
             'name'        => $this->argument('name'),
             '--fillable'  => $this->option('fillable'),
