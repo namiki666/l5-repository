@@ -3,7 +3,7 @@ namespace Prettus\Repository\Generators\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Prettus\Repository\Generators\JsonResouceGenerator;
+use Prettus\Repository\Generators\JsonResourceGenerator;
 use Prettus\Repository\Generators\FileAlreadyExistsException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -64,7 +64,7 @@ class JsonResourceCommand extends Command
     {
         try {
             
-            (new JsonResouceGenerator([
+            (new JsonResourceGenerator([
                 'name' => $this->argument('name'),
                 'force' => $this->option('force'),
             ]))->run();

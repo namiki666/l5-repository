@@ -215,6 +215,9 @@ abstract class Generator
             case ('resources' === $class):
                 $path = config('repository.generator.paths.resources', 'Http\Resources');
                 break;
+            case ('apicontrollers' === $class):
+                $path = config('repository.generator.paths.apicontrollers', 'Http\Controllers\API');
+                break;
             // case ('transformers' === $class):
             //     $path = config('repository.generator.paths.transformers', 'Transformers');
             //     break;

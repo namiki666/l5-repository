@@ -2,9 +2,9 @@
 
 $NAMESPACE$
 
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\JsonResource;
 
-class $CLASS$Collection extends ResourceCollection
+class $CLASS$Collection extends JsonResource
 {
     // View https://laravel.com/docs/5.8/eloquent-resources#adding-meta-data for more 
     

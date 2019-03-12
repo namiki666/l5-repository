@@ -6,7 +6,7 @@ namespace Prettus\Repository\Generators;
  * @package Prettus\Repository\Generators
  * @author Anderson Andrade <contato@andersonandra.de>
  */
-class JsonResouceGenerator extends Generator
+class JsonResourceGenerator extends Generator
 {
 
     /**
@@ -43,7 +43,7 @@ class JsonResouceGenerator extends Generator
      */
     public function getPath()
     {
-        return $this->getBasePath() . '/' . parent::getConfigGeneratorClassPath($this->getPathConfigNode(), true) . '/' . $this->getCollectionName() . 'Collection.php';
+        return $this->getBasePath() . '/' . parent::getConfigGeneratorClassPath($this->getPathConfigNode(), true) . '/' . $this->getName() . 'Collection.php';
     }
 
     /**
@@ -63,7 +63,6 @@ class JsonResouceGenerator extends Generator
      */
     public function getCollectionName()
     {
-
         return ucfirst($this->getPluralName());
     }
 
