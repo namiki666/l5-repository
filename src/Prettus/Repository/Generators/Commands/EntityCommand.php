@@ -71,6 +71,12 @@ class EntityCommand extends Command
             ]);
         }
 
+        if (array_has(\Artisan::all(), 'nova:resource') && $this->confirm('Would you like to create a NOVA Controller? [y|N]')) {
+            $this->call('nova:resource', [
+                'name'    => $this->argument('name'),
+            ]);
+        }
+
         if ($this->confirm('Would you like to create WCMS and API Controllers? [y|N]')) {
 
             $resource_args = [
