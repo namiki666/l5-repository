@@ -68,7 +68,9 @@ class ModelGenerator extends Generator
     public function getReplacements()
     {
         return array_merge(parent::getReplacements(), [
-            'fillable' => $this->getFillable()
+            'fillable' => $this->getFillable(),
+            'use_presenter' => $this->getPresenterUse(),
+            'presenter'     => $this->getPresenterMethod(),
         ]);
     }
 
@@ -99,5 +101,30 @@ class ModelGenerator extends Generator
     public function getSchemaParser()
     {
         return new SchemaParser($this->fillable);
+    }
+
+
+    public function getPresenterUse()
+    {
+        $presenter = $this->getPresenterMethod();
+
+        return "use {$presenter};";
+    }
+
+
+    public function getPresenterMethod()
+    {
+        $presenterGenerator = new PresenterGenerator([
+            'name'  => $this->name,
+            'force' => $this->force,
+        ]);
+
+        $presenter = $presenterGenerator->getRootNamespace() . '\\' . $presenterGenerator->getName();
+
+        return str_replace([
+            "\\",
+            '/'
+        ], '\\', $presenter) . 'Presenter';
+
     }
 }

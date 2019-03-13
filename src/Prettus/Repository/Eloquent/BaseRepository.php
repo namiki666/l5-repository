@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Prettus\Repository\Contracts\CriteriaInterface;
-use Prettus\Repository\Contracts\Presentable;
-use Prettus\Repository\Contracts\PresenterInterface;
 use Prettus\Repository\Contracts\RepositoryCriteriaInterface;
 use Prettus\Repository\Contracts\RepositoryInterface;
 use Prettus\Repository\Events\RepositoryEntityCreated;
@@ -46,11 +44,6 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     protected $fieldSearchable = [];
 
     /**
-     * @var PresenterInterface
-     */
-    protected $presenter;
-
-    /**
      * @var ValidatorInterface
      */
     protected $validator;
@@ -75,14 +68,9 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     protected $skipCriteria = false;
 
     /**
-     * @var bool
-     */
-    protected $skipPresenter = false;
-
-    /**
      * @var \Closure
      */
-    protected $scopeQuery = null;
+    protected $scopeQuery = [];
 
     /**
      * @param Application $app
@@ -92,7 +80,6 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $this->app = $app;
         $this->criteria = new Collection();
         $this->makeModel();
-        $this->makePresenter();
         $this->makeValidator();
         $this->boot();
     }
@@ -121,16 +108,6 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     abstract public function model();
 
     /**
-     * Specify Presenter class name
-     *
-     * @return string
-     */
-    public function presenter()
-    {
-        return null;
-    }
-
-    /**
      * Specify Validator class name of Prettus\Validator\Contracts\ValidatorInterface
      *
      * @return null
@@ -156,20 +133,6 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     }
 
     /**
-     * Set Presenter
-     *
-     * @param $presenter
-     *
-     * @return $this
-     */
-    public function setPresenter($presenter)
-    {
-        $this->makePresenter($presenter);
-
-        return $this;
-    }
-
-    /**
      * @return Model
      * @throws RepositoryException
      */
@@ -182,29 +145,6 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         }
 
         return $this->model = $model;
-    }
-
-    /**
-     * @param null $presenter
-     *
-     * @return PresenterInterface
-     * @throws RepositoryException
-     */
-    public function makePresenter($presenter = null)
-    {
-        $presenter = !is_null($presenter) ? $presenter : $this->presenter();
-
-        if (!is_null($presenter)) {
-            $this->presenter = is_string($presenter) ? $this->app->make($presenter) : $presenter;
-
-            if (!$this->presenter instanceof PresenterInterface) {
-                throw new RepositoryException("Class {$presenter} must be an instance of Prettus\\Repository\\Contracts\\PresenterInterface");
-            }
-
-            return $this->presenter;
-        }
-
-        return null;
     }
 
     /**
@@ -249,7 +189,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
      */
     public function scopeQuery(\Closure $scope)
     {
-        $this->scopeQuery = $scope;
+        $this->scopeQuery[] = $scope;
 
         return $this;
     }
@@ -379,11 +319,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $this->applyCriteria();
         $this->applyScope();
 
-        $temporarySkipPresenter = $this->skipPresenter;
-        $this->skipPresenter(true);
-
         $model = $this->model->firstOrNew($attributes);
-        $this->skipPresenter($temporarySkipPresenter);
 
         $this->resetModel();
 
@@ -402,11 +338,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $this->applyCriteria();
         $this->applyScope();
 
-        $temporarySkipPresenter = $this->skipPresenter;
-        $this->skipPresenter(true);
-
         $model = $this->model->firstOrCreate($attributes);
-        $this->skipPresenter($temporarySkipPresenter);
 
         $this->resetModel();
 
@@ -554,21 +486,6 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
      */
     public function create(array $attributes)
     {
-        if (!is_null($this->validator)) {
-            // we should pass data that has been casts by the model
-            // to make sure data type are same because validator may need to use
-            // this data to compare with data that fetch from database.
-            if( $this->versionCompare($this->app->version(), "5.2.*", ">") ){
-                $attributes = $this->model->newInstance()->forceFill($attributes)->makeVisible($this->model->getHidden())->toArray();
-            }else{
-                $model = $this->model->newInstance()->forceFill($attributes);
-                $model->addVisible($this->model->getHidden());
-                $attributes = $model->toArray();
-            }
-
-            $this->validator->with($attributes)->passesOrFail(ValidatorInterface::RULE_CREATE);
-        }
-
         $model = $this->model->newInstance($attributes);
         $model->save();
         $this->resetModel();
@@ -592,30 +509,10 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $this->applyScope();
 
-        if (!is_null($this->validator)) {
-            // we should pass data that has been casts by the model
-            // to make sure data type are same because validator may need to use
-            // this data to compare with data that fetch from database.
-            if( $this->versionCompare($this->app->version(), "5.2.*", ">") ){
-                $attributes = $this->model->newInstance()->forceFill($attributes)->makeVisible($this->model->getHidden())->toArray();
-            }else{
-                $model = $this->model->newInstance()->forceFill($attributes);
-                $model->addVisible($this->model->getHidden());
-                $attributes = $model->toArray();
-            }
-
-            $this->validator->with($attributes)->setId($id)->passesOrFail(ValidatorInterface::RULE_UPDATE);
-        }
-
-        $temporarySkipPresenter = $this->skipPresenter;
-
-        $this->skipPresenter(true);
-
         $model = $this->model->findOrFail($id);
         $model->fill($attributes);
         $model->save();
 
-        $this->skipPresenter($temporarySkipPresenter);
         $this->resetModel();
 
         event(new RepositoryEntityUpdated($this, $model));
@@ -637,17 +534,8 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $this->applyScope();
 
-        if (!is_null($this->validator)) {
-            $this->validator->with($attributes)->passesOrFail(ValidatorInterface::RULE_UPDATE);
-        }
-
-        $temporarySkipPresenter = $this->skipPresenter;
-
-        $this->skipPresenter(true);
-
         $model = $this->model->updateOrCreate($attributes, $values);
 
-        $this->skipPresenter($temporarySkipPresenter);
         $this->resetModel();
 
         event(new RepositoryEntityUpdated($this, $model));
@@ -666,13 +554,9 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $this->applyScope();
 
-        $temporarySkipPresenter = $this->skipPresenter;
-        $this->skipPresenter(true);
-
         $model = $this->find($id);
         $originalModel = clone $model;
 
-        $this->skipPresenter($temporarySkipPresenter);
         $this->resetModel();
 
         $deleted = $model->delete();
@@ -693,16 +577,12 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $this->applyScope();
 
-        $temporarySkipPresenter = $this->skipPresenter;
-        $this->skipPresenter(true);
-
         $this->applyConditions($where);
 
         $deleted = $this->model->delete();
 
         event(new RepositoryEntityDeleted($this, $this->model->getModel()));
 
-        $this->skipPresenter($temporarySkipPresenter);
         $this->resetModel();
 
         return $deleted;
@@ -902,7 +782,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
      */
     public function resetScope()
     {
-        $this->scopeQuery = null;
+        $this->scopeQuery = [];
 
         return $this;
     }
@@ -914,9 +794,15 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
      */
     protected function applyScope()
     {
-        if (isset($this->scopeQuery) && is_callable($this->scopeQuery)) {
-            $callback = $this->scopeQuery;
-            $this->model = $callback($this->model);
+        if (!is_array($this->scopeQuery)) {
+            $this->scopeQuery = [$this->scopeQuery];
+        }
+
+        foreach ($this->scopeQuery as $query) {
+            if (isset($query) && is_callable($query)) {
+                $callback = $query;
+                $this->model = $callback($this->model);
+            }
         }
 
         return $this;
@@ -965,21 +851,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         }
     }
 
-    /**
-     * Skip Presenter Wrapper
-     *
-     * @param bool $status
-     *
-     * @return $this
-     */
-    public function skipPresenter($status = true)
-    {
-        $this->skipPresenter = $status;
-
-        return $this;
-    }
-
-    /**
+    /**     
      * Wrapper result data
      *
      * @param mixed $result
@@ -988,24 +860,6 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
      */
     public function parserResult($result)
     {
-        if ($this->presenter instanceof PresenterInterface) {
-            if ($result instanceof Collection || $result instanceof LengthAwarePaginator) {
-                $result->each(function ($model) {
-                    if ($model instanceof Presentable) {
-                        $model->setPresenter($this->presenter);
-                    }
-
-                    return $model;
-                });
-            } elseif ($result instanceof Presentable) {
-                $result = $result->setPresenter($this->presenter);
-            }
-
-            if (!$this->skipPresenter) {
-                return $this->presenter->present($result);
-            }
-        }
-
         return $result;
     }
 }

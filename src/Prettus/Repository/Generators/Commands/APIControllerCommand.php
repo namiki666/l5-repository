@@ -3,7 +3,8 @@ namespace Prettus\Repository\Generators\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Prettus\Repository\Generators\ControllerGenerator;
+use Prettus\Repository\Generators\JsonResourceGenerator;
+use Prettus\Repository\Generators\APIControllerGenerator;
 use Prettus\Repository\Generators\FileAlreadyExistsException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -13,7 +14,7 @@ use Symfony\Component\Console\Input\InputOption;
  * @package Prettus\Repository\Generators\Commands
  * @author Anderson Andrade <contato@andersonandra.de>
  */
-class ControllerCommand extends Command
+class APIControllerCommand extends Command
 {
 
     /**
@@ -21,28 +22,27 @@ class ControllerCommand extends Command
      *
      * @var string
      */
-    protected $name = 'make:resource';
+    protected $name = 'make:api-controller';
 
     /**
      * The description of command.
      *
      * @var string
      */
-    protected $description = 'Create a new RESTful controller.';
+    protected $description = 'Create a new API controller.';
 
     /**
      * The type of class being generated.
      *
      * @var string
      */
-    protected $type = 'Controller';
+    protected $type = 'API Controller';
 
     /**
      * ControllerCommand constructor.
      */
     public function __construct()
     {
-        $this->name = ((float) app()->version() >= 5.5  ? 'make:rest-controller' : 'make:resource');
         parent::__construct();
     }
 
@@ -65,7 +65,23 @@ class ControllerCommand extends Command
     {
         try {
 
-            (new ControllerGenerator([
+            // Generate create request for controller
+            $this->call('make:request', [
+                'name' => $this->argument('name') . 'CreateRequest'
+            ]);
+
+            // Generate update request for controller
+            $this->call('make:request', [
+                'name' => $this->argument('name') . 'UpdateRequest'
+            ]);
+            
+            (new JsonResourceGenerator([
+                'name'  => $this->argument('name'),
+                'force' => $this->option('force'),
+            ]))->run();
+            $this->info("Json Resource created successfully.");
+
+            (new APIControllerGenerator([
                 'name' => $this->argument('name'),
                 'force' => $this->option('force'),
             ]))->run();

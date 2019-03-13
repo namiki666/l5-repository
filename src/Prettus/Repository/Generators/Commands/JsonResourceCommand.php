@@ -3,7 +3,7 @@ namespace Prettus\Repository\Generators\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Prettus\Repository\Generators\ControllerGenerator;
+use Prettus\Repository\Generators\JsonResourceGenerator;
 use Prettus\Repository\Generators\FileAlreadyExistsException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -13,7 +13,7 @@ use Symfony\Component\Console\Input\InputOption;
  * @package Prettus\Repository\Generators\Commands
  * @author Anderson Andrade <contato@andersonandra.de>
  */
-class ControllerCommand extends Command
+class JsonResourceCommand extends Command
 {
 
     /**
@@ -21,28 +21,27 @@ class ControllerCommand extends Command
      *
      * @var string
      */
-    protected $name = 'make:resource';
+    protected $name = 'make:json-resource';
 
     /**
      * The description of command.
      *
      * @var string
      */
-    protected $description = 'Create a new RESTful controller.';
+    protected $description = 'Create a new Json Resource.';
 
     /**
      * The type of class being generated.
      *
      * @var string
      */
-    protected $type = 'Controller';
+    protected $type = 'Json Resource';
 
     /**
      * ControllerCommand constructor.
      */
     public function __construct()
     {
-        $this->name = ((float) app()->version() >= 5.5  ? 'make:rest-controller' : 'make:resource');
         parent::__construct();
     }
 
@@ -64,8 +63,8 @@ class ControllerCommand extends Command
     public function fire()
     {
         try {
-
-            (new ControllerGenerator([
+            
+            (new JsonResourceGenerator([
                 'name' => $this->argument('name'),
                 'force' => $this->option('force'),
             ]))->run();
@@ -91,7 +90,7 @@ class ControllerCommand extends Command
             [
                 'name',
                 InputArgument::REQUIRED,
-                'The name of model for which the controller is being generated.',
+                'The name of model for which the Json Resource is being generated.',
                 null
             ],
         ];

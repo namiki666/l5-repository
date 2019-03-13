@@ -71,7 +71,13 @@ class EntityCommand extends Command
             ]);
         }
 
-        if ($this->confirm('Would you like to create a Controller? [y|N]')) {
+        if (array_has(\Artisan::all(), 'nova:resource') && $this->confirm('Would you like to create a NOVA Controller? [y|N]')) {
+            $this->call('nova:resource', [
+                'name'    => $this->argument('name'),
+            ]);
+        }
+
+        if ($this->confirm('Would you like to create WCMS and API Controllers? [y|N]')) {
 
             $resource_args = [
                 'name'    => $this->argument('name')
@@ -80,6 +86,8 @@ class EntityCommand extends Command
             // Generate a controller resource
             $controller_command = ((float) app()->version() >= 5.5  ? 'make:rest-controller' : 'make:resource');
             $this->call($controller_command, $resource_args);
+
+            $this->call('make:api-controller', $resource_args);
         }
 
         $this->call('make:repository', [

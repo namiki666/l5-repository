@@ -16,43 +16,14 @@ trait PresentableTrait
     /**
      * @var PresenterInterface
      */
-    protected $presenter = null;
-
-    /**
-     * @param \Prettus\Repository\Contracts\PresenterInterface $presenter
-     *
-     * @return $this
-     */
-    public function setPresenter(PresenterInterface $presenter)
-    {
-        $this->presenter = $presenter;
-
-        return $this;
-    }
-
-    /**
-     * @param      $key
-     * @param null $default
-     *
-     * @return mixed|null
-     */
-    public function present($key, $default = null)
-    {
-        if ($this->hasPresenter()) {
-            $data = $this->presenter()['data'];
-
-            return Arr::get($data, $key, $default);
-        }
-
-        return $default;
-    }
+    protected $presenterInstance = null;
 
     /**
      * @return bool
      */
     protected function hasPresenter()
     {
-        return isset($this->presenter) && $this->presenter instanceof PresenterInterface;
+        return isset($this->presenter) && $this->presenterInstance instanceof PresenterInterface;
     }
 
     /**
@@ -60,10 +31,16 @@ trait PresentableTrait
      */
     public function presenter()
     {
-        if ($this->hasPresenter()) {
-            return $this->presenter->present($this);
+        if (! $this->presenter)
+        {
+            return null;
         }
 
-        return $this;
+        if (! $this->hasPresenter())
+        {
+            $this->presenterInstance = new $this->presenter($this);
+        }
+
+        return $this->presenterInstance;
     }
 }
