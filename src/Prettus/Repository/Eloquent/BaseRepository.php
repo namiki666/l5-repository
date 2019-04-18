@@ -303,6 +303,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $results = $this->model->first($columns);
 
         $this->resetModel();
+        $this->resetScope();
 
         return $this->parserResult($results);
     }
@@ -322,6 +323,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $model = $this->model->firstOrNew($attributes);
 
         $this->resetModel();
+        $this->resetScope();
 
         return $this->parserResult($model);
     }
@@ -341,6 +343,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $model = $this->model->firstOrCreate($attributes);
 
         $this->resetModel();
+        $this->resetScope();
 
         return $this->parserResult($model);
     }
@@ -391,8 +394,28 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $this->applyCriteria();
         $this->applyScope();
+        $model = $this->model->find($id, $columns);
+        $this->resetModel();
+        $this->resetScope();
+
+        return $this->parserResult($model);
+    }
+
+    /**
+     * Find data by id or fail
+     *
+     * @param       $id
+     * @param array $columns
+     *
+     * @return mixed
+     */
+    public function findOrFail($id, $columns = ['*'])
+    {
+        $this->applyCriteria();
+        $this->applyScope();
         $model = $this->model->findOrFail($id, $columns);
         $this->resetModel();
+        $this->resetScope();
 
         return $this->parserResult($model);
     }
@@ -412,6 +435,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $this->applyScope();
         $model = $this->model->where($field, '=', $value)->get($columns);
         $this->resetModel();
+        $this->resetScope();
 
         return $this->parserResult($model);
     }
@@ -433,6 +457,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
 
         $model = $this->model->get($columns);
         $this->resetModel();
+        $this->resetScope();
 
         return $this->parserResult($model);
     }
@@ -452,6 +477,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $this->applyScope();
         $model = $this->model->whereIn($field, $values)->get($columns);
         $this->resetModel();
+        $this->resetScope();
 
         return $this->parserResult($model);
     }
@@ -471,6 +497,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $this->applyScope();
         $model = $this->model->whereNotIn($field, $values)->get($columns);
         $this->resetModel();
+        $this->resetScope();
 
         return $this->parserResult($model);
     }
@@ -489,6 +516,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $model = $this->model->newInstance($attributes);
         $model->save();
         $this->resetModel();
+        $this->resetScope();
 
         event(new RepositoryEntityCreated($this, $model));
 
@@ -514,6 +542,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $model->save();
 
         $this->resetModel();
+        $this->resetScope();
 
         event(new RepositoryEntityUpdated($this, $model));
 
@@ -537,6 +566,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $model = $this->model->updateOrCreate($attributes, $values);
 
         $this->resetModel();
+        $this->resetScope();
 
         event(new RepositoryEntityUpdated($this, $model));
 
@@ -558,6 +588,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $originalModel = clone $model;
 
         $this->resetModel();
+        $this->resetScope();
 
         $deleted = $model->delete();
 
@@ -584,6 +615,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         event(new RepositoryEntityDeleted($this, $this->model->getModel()));
 
         $this->resetModel();
+        $this->resetScope();
 
         return $deleted;
     }
@@ -745,6 +777,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $this->model = $criteria->apply($this->model, $this);
         $results = $this->model->get();
         $this->resetModel();
+        $this->resetScope();
 
         return $this->parserResult($results);
     }
