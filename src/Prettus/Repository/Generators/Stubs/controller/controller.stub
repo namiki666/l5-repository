@@ -120,7 +120,7 @@ class $CONTROLLER$Controller extends Controller
      */
     public function show($id)
     {
-        $$SINGULAR$ = $this->repository->find($id);
+        $$SINGULAR$ = $this->repository->findOrFail($id);
 
         if (request()->wantsJson()) {
 
