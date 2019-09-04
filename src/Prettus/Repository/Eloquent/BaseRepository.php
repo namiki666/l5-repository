@@ -75,9 +75,9 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     /**
      * @param Application $app
      */
-    public function __construct(Application $app)
+    public function __construct()
     {
-        $this->app = $app;
+        $this->app = app();
         $this->criteria = new Collection();
         $this->makeModel();
         $this->makeValidator();
@@ -140,7 +140,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     {
         $model = $this->app->make($this->model());
 
-        if (!$model instanceof Model) {
+        if (! $model instanceof Model) {
             throw new RepositoryException("Class {$this->model()} must be an instance of Illuminate\\Database\\Eloquent\\Model");
         }
 
@@ -524,20 +524,29 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     }
 
     /**
-     * Update a entity in repository by id
+     * Update a entity in repository by id / model
      *
      * @throws ValidatorException
+     * @throws \Prettus\Repository\Exceptions\RepositoryException
      *
      * @param array $attributes
-     * @param       $id
+     * @param mixed $model
      *
      * @return mixed
      */
-    public function update(array $attributes, $id)
+    public function update(array $attributes, $model)
     {
         $this->applyScope();
+        $modelClass = $this->model();
 
-        $model = $this->model->findOrFail($id);
+        if (is_int($model)) {
+            $model = $this->model->findOrFail($model);
+        }
+
+        if (! $model instanceof $modelClass) {
+            throw new RepositoryException("Model " . get_class($model) . " must be an instance of {$this->model()}");
+        }
+
         $model->fill($attributes);
         $model->save();
 
@@ -574,17 +583,25 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     }
 
     /**
-     * Delete a entity in repository by id
+     * Delete a entity in repository by id / model
      *
-     * @param $id
+     * @param mixed $model
      *
      * @return int
      */
-    public function delete($id)
+    public function delete($model)
     {
         $this->applyScope();
+        $modelClass = $this->model();
 
-        $model = $this->find($id);
+        if (is_int($model)) {
+            $model = $this->model->find($model);
+        }
+
+        if (! $model instanceof $modelClass) {
+            throw new RepositoryException("Model " . get_class($model) . " must be an instance of {$this->model()}");
+        }
+
         $originalModel = clone $model;
 
         $this->resetModel();
@@ -884,7 +901,7 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         }
     }
 
-    /**     
+    /**
      * Wrapper result data
      *
      * @param mixed $result

@@ -5,6 +5,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use Prettus\Repository\Generators\ModelGenerator;
 
 /**
  * Class EntityCommand
@@ -78,16 +79,15 @@ class EntityCommand extends Command
         }
 
         if ($this->confirm('Would you like to create WCMS and API Controllers? [y|N]')) {
-
             $resource_args = [
-                'name'    => $this->argument('name')
+                'name'    => $this->argument('name'),
             ];
 
             // Generate a controller resource
+            $this->call('make:api-controller', $resource_args);
+
             $controller_command = ((float) app()->version() >= 5.5  ? 'make:rest-controller' : 'make:resource');
             $this->call($controller_command, $resource_args);
-
-            $this->call('make:api-controller', $resource_args);
         }
 
         $this->call('make:repository', [

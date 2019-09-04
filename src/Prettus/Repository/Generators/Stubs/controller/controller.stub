@@ -7,6 +7,7 @@ use $APPNAME$Http\Requests;
 use $APPNAME$Http\Controllers\Controller;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
+$MODEL$
 $REPOSITORY$
 $VALIDATOR$
 
@@ -46,15 +47,9 @@ class $CONTROLLER$Controller extends Controller
      */
     public function index()
     {
+        // Enable below line to enable request criteria
         // $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
         $$PLURAL$ = $this->repository->all();
-
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'data' => $$PLURAL$,
-            ]);
-        }
 
         return view('$PLURAL$.index', compact('$PLURAL$'));
     }
@@ -83,7 +78,6 @@ class $CONTROLLER$Controller extends Controller
     public function store(Request $request)
     {
         try {
-
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_CREATE);
 
             $$SINGULAR$ = $this->repository->create($request->all());
@@ -92,57 +86,34 @@ class $CONTROLLER$Controller extends Controller
                 'message' => '$CLASS$ created.',
                 'data'    => $$SINGULAR$->toArray(),
             ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
         } catch (ValidatorException $e) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
             return redirect()->back()->withErrors($e->getMessageBag())->withInput();
         }
+
+        return redirect()->back()->with('message', $response['message']);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int $id
+     * @param  $CLASS$ $$SINGULAR$
      *
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($CLASS$ $$SINGULAR$)
     {
-        $$SINGULAR$ = $this->repository->findOrFail($id);
-
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'data' => $$SINGULAR$,
-            ]);
-        }
-
         return view('$PLURAL$.show', compact('$SINGULAR$'));
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int $id
+     * @param  $CLASS$ $$SINGULAR$
      *
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit($CLASS$ $$SINGULAR$)
     {
-        $$SINGULAR$ = $this->repository->find($id);
-
         return view('$PLURAL$.edit', compact('$SINGULAR$'));
     }
 
@@ -150,43 +121,28 @@ class $CONTROLLER$Controller extends Controller
      * Update the specified resource in storage.
      *
      * @param  $CLASS$UpdateRequest $request
-     * @param  string            $id
+     * @param  $CLASS$ $$SINGULAR$
      *
      * @return Response
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $CLASS$ $$SINGULAR$)
     {
         try {
-
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_UPDATE);
 
-            $$SINGULAR$ = $this->repository->update($request->all(), $id);
+            $$SINGULAR$ = $this->repository->update($request->all(), $$SINGULAR$);
 
             $response = [
                 'message' => '$CLASS$ updated.',
                 'data'    => $$SINGULAR$->toArray(),
             ];
-
-            if ($request->wantsJson()) {
-
-                return response()->json($response);
-            }
-
-            return redirect()->back()->with('message', $response['message']);
         } catch (ValidatorException $e) {
-
-            if ($request->wantsJson()) {
-
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
-            }
-
             return redirect()->back()->withErrors($e->getMessageBag())->withInput();
         }
+
+        return redirect()->back()->with('message', $response['message']);
     }
 
 
@@ -197,17 +153,9 @@ class $CONTROLLER$Controller extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($CLASS$ $$SINGULAR$)
     {
-        $deleted = $this->repository->delete($id);
-
-        if (request()->wantsJson()) {
-
-            return response()->json([
-                'message' => '$CLASS$ deleted.',
-                'deleted' => $deleted,
-            ]);
-        }
+        $deleted = $this->repository->delete($$SINGULAR$);
 
         return redirect()->back()->with('message', '$CLASS$ deleted.');
     }
