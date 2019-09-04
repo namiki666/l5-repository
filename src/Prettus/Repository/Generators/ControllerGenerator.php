@@ -1,6 +1,8 @@
 <?php
 namespace Prettus\Repository\Generators;
 
+use Prettus\Repository\Generators\ModelGenerator;
+
 /**
  * Class ControllerGenerator
  * @package Prettus\Repository\Generators
@@ -64,7 +66,7 @@ class ControllerGenerator extends Generator
     public function getControllerName()
     {
 
-        return ucfirst($this->getPluralName());
+        return ucfirst($this->getSingularName());
     }
 
     /**
@@ -93,6 +95,7 @@ class ControllerGenerator extends Generator
             'validator'  => $this->getValidator(),
             'repository' => $this->getRepository(),
             'appname'    => $this->getAppNamespace(),
+            'model'      => $this->getModel(),
         ]);
     }
 
@@ -125,6 +128,24 @@ class ControllerGenerator extends Generator
         ], '\\', $validator) . 'Validator;';
     }
 
+    /**
+     * Get Model fill class name
+     *
+     * @return string
+     */
+    public function getModel()
+    {
+        $modelGenerator = new ModelGenerator([
+            'name'     => $this->name,
+        ]);
+
+        $model = $modelGenerator->getRootNamespace() . '\\' . $modelGenerator->getName();
+
+        return 'use ' . str_replace([
+            "\\",
+            '/'
+        ], '\\', $model). ';';
+    }
 
     /**
      * Gets repository full class name

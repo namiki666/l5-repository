@@ -31,13 +31,11 @@ trait PresentableTrait
      */
     public function presenter()
     {
-        if (! $this->presenter)
-        {
+        if (! $this->presenter) {
             return null;
         }
 
-        if (! $this->hasPresenter())
-        {
+        if (! $this->hasPresenter()) {
             $this->presenterInstance = new $this->presenter($this);
         }
 

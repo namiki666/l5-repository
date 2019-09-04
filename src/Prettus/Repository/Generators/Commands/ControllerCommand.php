@@ -52,7 +52,8 @@ class ControllerCommand extends Command
      * @see fire()
      * @return void
      */
-    public function handle(){
+    public function handle()
+    {
         $this->laravel->call([$this, 'fire'], func_get_args());
     }
 
@@ -64,14 +65,12 @@ class ControllerCommand extends Command
     public function fire()
     {
         try {
-
             (new ControllerGenerator([
                 'name' => $this->argument('name'),
                 'force' => $this->option('force'),
             ]))->run();
 
             $this->info($this->type . ' created successfully.');
-
         } catch (FileAlreadyExistsException $e) {
             $this->error($this->type . ' already exists!');
 
