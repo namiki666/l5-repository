@@ -276,6 +276,31 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
     }
 
     /**
+     * Count results of repository
+     *
+     * @param array $where
+     * @param string $columns
+     *
+     * @return int
+     */
+    public function count(array $where = [], $columns = '*')
+    {
+        $this->applyCriteria();
+        $this->applyScope();
+
+        if ($where) {
+            $this->applyConditions($where);
+        }
+
+        $result = $this->model->count($columns);
+
+        $this->resetModel();
+        $this->resetScope();
+
+        return $result;
+    }
+
+    /**
      * Alias of All method
      *
      * @param array $columns
@@ -346,6 +371,25 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $this->resetScope();
 
         return $this->parserResult($model);
+    }
+
+    /**
+     * Set the "limit" value of the query.
+     *
+     * @param  int  $value
+     * @return mixed
+     */
+    public function limit($limit)
+    {
+        $this->applyCriteria();
+        $this->applyScope();
+
+        $results = $this->model->limit($limit);
+
+        $this->resetModel();
+        $this->resetScope();
+
+        return $this->parserResult($results);
     }
 
     /**
@@ -496,6 +540,28 @@ abstract class BaseRepository implements RepositoryInterface, RepositoryCriteria
         $this->applyCriteria();
         $this->applyScope();
         $model = $this->model->whereNotIn($field, $values)->get($columns);
+        $this->resetModel();
+        $this->resetScope();
+
+        return $this->parserResult($model);
+    }
+
+    /**
+     * Find data by between values in one field
+     *
+     * @param       $field
+     * @param array $values
+     * @param array $columns
+     *
+     * @return mixed
+     */
+    public function findWhereBetween($field, array $values, $columns = ['*'])
+    {
+        $this->applyCriteria();
+        $this->applyScope();
+
+        $model = $this->model->whereBetween($field, $values)->get($columns);
+
         $this->resetModel();
         $this->resetScope();
 
